@@ -1,0 +1,2 @@
+
+intents = discord.Intents.default()
