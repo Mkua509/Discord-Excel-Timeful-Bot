@@ -17,17 +17,18 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
+#Initiate excel (Just change these values in correspondence to your needs)
+excel_name = "test"
+sheet_name = "Sheet1"
+
 # Connect the google spread sheet
 gc = gspread.service_account(filename='service_account.json')
-sh = gc.open("test")
+sh = gc.open(excel_name)
 
-worksheet = sh.worksheet("Sheet1")
+worksheet = sh.worksheet(sheet_name)
 
 # Set the command for the bot as !
 bot = commands.Bot(command_prefix='!', intents=intents)
-
-# Definition of the secret role in discord
-secret_role = "test"
 
 @bot.event
 async def on_ready():
@@ -54,17 +55,5 @@ async def filled_form(ctx):
             await user.send(f"Please fill out the form :((")
     
     await ctx.send("DMs sent to everyone who hasn't filled the form!")
-
-    # Allows the bot to continue processing the other commands
-    await bot.process_commands(filled_form)
-
-
-@bot.command()
-async def dm(ctx, *, msg):
-    await ctx.author.send(f"you said {msg}")
-
-@bot.command()
-async def reply1(ctx):
-    await ctx.reply("This is a reply to your message")
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
