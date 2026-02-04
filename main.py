@@ -3,61 +3,61 @@ from discord.ext import commands
 import logging
 from dotenv import load_dotenv
 import os
+import gspread
 
+# Loads env file for key
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
 
+# For logging errors
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
 
-# Specify the intents that you want to activate
+# Specify the intents that you want to activate (Need to do this manually)
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
+# Connect the google spread sheet
+gc = gspread.service_account(filename='service_account.json')
+sh = gc.open("test")
+
+worksheet = sh.worksheet("Sheet1")
+
+# Set the command for the bot as !
 bot = commands.Bot(command_prefix='!', intents=intents)
 
+# Definition of the secret role in discord
 secret_role = "test"
 
 @bot.event
 async def on_ready():
     print(f"We are ready to go in {bot.user.name}")
 
-@bot.event
-async def on_member_join(member):
-    await member.send(f"Welcome to the server {member.name}")
+@bot.command()
+async def filled_form(ctx):
+    # Fetch fresh data from spreadsheet each time
+    values_list = worksheet.col_values(1)
+    completed_list = worksheet.col_values(2)
+    discord_id = worksheet.col_values(3)
+    
+    # Remove headers
+    values_list.pop(0)
+    completed_list.pop(0)
+    discord_id.pop(0)
 
-@bot.event
-async def on_message(message):
-    if message.author == bot.user:
-        return
+    # Uses Zip to ensure it doesn't over iterate
+    for values_list, completed_list, discord_id in zip(values_list, completed_list, discord_id):
+        if completed_list == 'FALSE':
+            user_id = int(discord_id)
+            #await ctx.send(f"<@{user_id}> Please fill out the form :((") old comment for sending in serer
+            user = await bot.fetch_user(user_id)
+            await user.send(f"Please fill out the form :((")
     
-    if "shit" in message.content.lower():
-        await message.channel.send(f"{message.author.mention} ballsack!")
-    
+    await ctx.send("DMs sent to everyone who hasn't filled the form!")
+
     # Allows the bot to continue processing the other commands
-    await bot.process_commands(message)
+    await bot.process_commands(filled_form)
 
-@bot.command()
-async def hello(ctx):
-    await ctx.send(f"Hello {ctx.author.mention}!")
-
-@bot.command()
-async def assign(ctx):
-    role = discord.utils.get(ctx.guild.roles, name=secret_role)
-    if role:
-        await ctx.author.add_roles(role)
-        await ctx.send(f"{ctx.author.mention} is now assigned to {secret_role}")
-    else:
-        await ctx.send("Rile doesn't exist")
-
-@bot.command()
-async def remove(ctx):
-    role = discord.utils.get(ctx.guild.roles, name=secret_role)
-    if role:
-        await ctx.author.remove_roles(role)
-        await ctx.send(f"{ctx.author.mention} has now got {secret_role} removed")
-    else:
-        await ctx.send("Role doesn't exist")
 
 @bot.command()
 async def dm(ctx, *, msg):
