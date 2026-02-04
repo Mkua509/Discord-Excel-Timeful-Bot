@@ -1,2 +1,24 @@
+# Secrets and credentials
 .env
-.discord.log
+service_account.json
+
+# Log files
+*.log
+discord.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# Temp files
+tempCodeRunnerFile.py
