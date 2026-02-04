@@ -1,5 +1,5 @@
 # About This Project:
-This project is a reflection of my time in clubs, sometimes its very difficult to track and get people to fill out ![Timeful's](https://timeful.app/) and Google Sheets. Soooo I have resorted in making a discord bot that spam dm's you at certain time's of the day so that I can automate the process. Hopefully they don't mute the bot hahahhahahaha.
+This project is a reflection of my time in clubs, sometimes its very difficult to track and get people to fill out [Timeful's](https://timeful.app/) and Google Sheets. Soooo I have resorted in making a discord bot that spam dm's you at certain time's of the day so that I can automate the process. Hopefully they don't mute the bot hahahhahahaha.
 
 ## How It's Made:
 
