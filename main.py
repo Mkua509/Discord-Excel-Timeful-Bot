@@ -4,6 +4,7 @@ import logging
 from dotenv import load_dotenv
 import os
 import gspread
+import asyncio
 
 # Loads env file for key
 load_dotenv()
@@ -33,11 +34,37 @@ bot = commands.Bot(command_prefix='!', intents=intents)
 @bot.event
 async def on_ready():
     print(f"We are ready to go in {bot.user.name}")
-    reminder_loop.start()
+
+current_loop_task = None
+
+@bot.command()
+async def time_interval(ctx, interval:int):
+    
+    global current_loop_task
+    
+    # Bounds for safety
+    if interval < 30 or interval > 86400:
+        await ctx.send("Interval must be within 30 seconds or 24 hours! Automatically set to closer value")
+        interval = max(30, min(interval, 86400))  # 30 sec → 24 hours
+    
+
+    # Stop the previous loop
+    if current_loop_task and not current_loop_task.done():
+        current_loop_task.cancel()
+    
+    await ctx.send(f"Setting reminder loop interval to {interval} seconds")
+
+    # Start a new async task
+    async def loop_task():
+        while True:
+            await reminder_loop_logic()
+            await asyncio.sleep(interval)
+    
+    current_loop_task = asyncio.create_task(loop_task())
+
 
 # Reminds people based on a loop
-@tasks.loop(seconds=5)
-async def reminder_loop():
+async def reminder_loop_logic():
     # Fetch fresh data from spreadsheet each time
     values_list = worksheet.col_values(1) 
     completed_list = worksheet.col_values(2)
@@ -48,13 +75,13 @@ async def reminder_loop():
     completed_list.pop(0)
     discord_id.pop(0)
 
-    # Uses Zip to ensure it doesn't over iterate
-    for values_list, completed_list, discord_id in zip(values_list, completed_list, discord_id):
-        user_id = int(discord_id)
-        user = await bot.fetch_user(user_id)
-        if completed_list == 'FALSE':
-            await user.send(f"Please fill out the {excel_name} form :((")
-    
+    for value, completed, user_id in zip(values_list, completed_list, discord_id):
+        if completed == 'FALSE':
+            try:
+                user = await bot.fetch_user(int(user_id))
+                await user.send(f"Please fill out the {excel_name} form :((")
+            except Exception as e:
+                logging.error(f"Failed DM {user_id}: {e}")
 
 # Reminds people based on a command
 @bot.command()
@@ -69,14 +96,15 @@ async def filled_form(ctx):
     completed_list.pop(0)
     discord_id.pop(0)
 
-    # Uses Zip to ensure it doesn't over iterate
-    for values_list, completed_list, discord_id in zip(values_list, completed_list, discord_id):
-        if completed_list == 'FALSE':
-            user_id = int(discord_id)
-            #await ctx.send(f"<@{user_id}> Please fill out the form :((") old comment for sending in serer
-            user = await bot.fetch_user(user_id)
-            await user.send(f"Please fill out the {excel_name} form :((")
-    
+    for value, completed, user_id in zip(values_list, completed_list, discord_id):
+        if completed == 'FALSE':
+            try:
+                user = await bot.fetch_user(int(user_id))
+                await user.send(f"Please fill out the {excel_name} form :((")
+            except Exception as e:
+                logging.error(f"Failed DM {user_id}: {e}")
+                
     await ctx.send("DMs sent to everyone who hasn't filled the form!")
+
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
