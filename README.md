@@ -15,7 +15,10 @@ Currently all the bot does is connect to a excel spread sheet of the user's choo
 - DiscordID: Discord ID of the person in order to direct message them 
 - Filled: Column with tick boxes if the box is not ticked it will send a DM to the person when command is run
 
-If you want to run the command it's !filled_form.
+There are two existing commands:
+
+1. !filled_form: Sends out discord DM via bot to users who have not ticked the filled column inside the spread sheet
+2. !time_interval (seconds): Creates a loop which periodically sends dm's based off seconds
 
 ## DISCLAIMER:
 
