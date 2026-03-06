@@ -29,11 +29,11 @@ sh = gc.open(excel_name)
 worksheet = sh.worksheet(sheet_name)
 
 # Set the command for the bot as !
-bot = commands.Bot(command_prefix='!', intents=intents)
+bot = commands.Bot(command_prefix='/', intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f"We are ready to go in {bot.user.name}")
+    print(f"Bot is ready my name is {bot.user.name}")
 
 current_loop_task = None
 
