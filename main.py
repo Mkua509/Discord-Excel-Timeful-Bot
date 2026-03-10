@@ -146,7 +146,6 @@ async def pause_reminders(ctx):
 async def resume_reminders(ctx):
     
     global is_paused
-
     if current_loop_task is None or current_loop_task.done():
         await ctx.send("No active reminders")
     elif is_paused:

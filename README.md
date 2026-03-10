@@ -15,10 +15,13 @@ Currently all the bot does is connect to a excel spread sheet of the user's choo
 - DiscordID: Discord ID of the person in order to direct message them 
 - Filled: Column with tick boxes if the box is not ticked it will send a DM to the person when command is run
 
-There are two existing commands:
+The existing commands are below:
 
 1. !filled_form: Sends out discord DM via bot to users who have not ticked the filled column inside the spread sheet
 2. !time_interval (seconds): Creates a loop which periodically sends dm's based off seconds
+3. !stop_reminders: Stops the current loop made by !time_interval
+4. !pause_reminders: Pauses the current loop instead of stopping loop completely
+5. !resume_reminders: Resumes the previously paused loop
 
 ## DISCLAIMER:
 
