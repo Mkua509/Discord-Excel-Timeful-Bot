@@ -36,11 +36,13 @@ async def on_ready():
     print(f"Bot is ready my name is {bot.user.name}")
 
 current_loop_task = None
+current_interval = None
 
 @bot.command()
 async def time_interval(ctx, interval:int):
     
     global current_loop_task
+    global current_interval
     
     # Bounds for safety
     if interval < 30 or interval > 86400:
@@ -105,6 +107,27 @@ async def filled_form(ctx):
                 logging.error(f"Failed DM {user_id}: {e}")
                 
     await ctx.send("DMs sent to everyone who hasn't filled the form!")
+
+# Create a start and stop reminders
+@bot.command()
+async def stop_reminders(ctx):
+    
+    global current_loop_task
+
+    if current_loop_task is not None:
+        # Must call cancel or else the async task won't be cancelled automatically
+        current_loop_task.cancel()
+        # Then set current loop to None
+        current_loop_task = None
+        await ctx.send("Stopped the current looped task")
+    else:
+        await ctx.send("There is no current task!")
+
+
+
+@bot.command()
+async def resume_reminders(ctx):
+    pass
 
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
