@@ -35,6 +35,7 @@ bot = commands.Bot(command_prefix='/', intents=intents)
 async def on_ready():
     print(f"Bot is ready my name is {bot.user.name}")
 
+is_paused = False
 current_loop_task = None
 current_interval = None
 
@@ -42,7 +43,6 @@ current_interval = None
 async def time_interval(ctx, interval:int):
     
     global current_loop_task
-    global current_interval
     
     # Bounds for safety
     if interval < 30 or interval > 86400:
@@ -59,7 +59,8 @@ async def time_interval(ctx, interval:int):
     # Start a new async task
     async def loop_task():
         while True:
-            await reminder_loop_logic()
+            if not is_paused:
+                await reminder_loop_logic()
             await asyncio.sleep(interval)
     
     current_loop_task = asyncio.create_task(loop_task())
@@ -113,21 +114,46 @@ async def filled_form(ctx):
 async def stop_reminders(ctx):
     
     global current_loop_task
+    global is_paused 
 
     if current_loop_task is not None:
         # Must call cancel or else the async task won't be cancelled automatically
         current_loop_task.cancel()
         # Then set current loop to None
         current_loop_task = None
+        is_paused = False
         await ctx.send("Stopped the current looped task")
     else:
         await ctx.send("There is no current task!")
 
+# Pauses reminder of current loop 
+@bot.command()
+async def pause_reminders(ctx):
+
+    global is_paused
+
+    if current_loop_task is None or current_loop_task.done():
+        await ctx.send("No active reminders")
+    elif is_paused:
+        await ctx.send("The task is already paused!")
+    else:
+        is_paused = True
+        await ctx.send("The looped task is now paused")
+        
 
 
 @bot.command()
 async def resume_reminders(ctx):
-    pass
+    
+    global is_paused
+
+    if current_loop_task is None or current_loop_task.done():
+        await ctx.send("No active reminders")
+    elif is_paused:
+        is_paused = False
+        await ctx.send("The looped task is now unpaused")
+    else:
+        await ctx.send("The reminder is already looping!")
 
 
 bot.run(token, log_handler=handler, log_level=logging.DEBUG)
